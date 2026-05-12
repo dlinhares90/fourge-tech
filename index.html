@@ -7270,13 +7270,35 @@ flowchart LR
         <div class="subsection" id="cn-sec1-2">
           <div class="subsection-title">1.2 📋 Navegação por Ações</div>
           <p>
-            Ao clicar em qualquer uma das listas de ações (<strong>Monitoramento</strong>,
-            <strong>Pós-Alta</strong> ou <strong>Acolhimentos</strong>), o sistema exibirá:
+            Ao clicar em qualquer um dos cards de ação (<strong>Acolhimento</strong>,
+            <strong>Monitoramento</strong> ou <strong>Pós-Alta</strong>), o sistema exibirá,
+            na listagem abaixo dos indicadores, a relação de pacientes correspondente à ação
+            selecionada, organizada nas três abas a seguir:
           </p>
-          <ul>
-            <li>A <strong>lista de pacientes previstos para o dia</strong>, conforme a ação selecionada.</li>
-            <li>Os <strong>pacientes disponíveis</strong> para execução da ação correspondente.</li>
-          </ul>
+          <table>
+            <thead>
+              <tr><th>Aba</th><th>Conteúdo exibido</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Hoje</strong></td>
+                <td>Exibe a respectiva ação <strong>prevista para o dia atual</strong>.</td>
+              </tr>
+              <tr>
+                <td><strong>Em Atraso</strong></td>
+                <td>Exibe a respectiva ação em atraso, considerando a janela de <strong>hoje − 7 dias</strong>.</td>
+              </tr>
+              <tr>
+                <td><strong>Realizados</strong></td>
+                <td>Exibe a respectiva ação <strong>realizada no dia de hoje</strong>.</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="margin-top:12px;">
+            A lógica de abas aplica-se de forma equivalente aos três cards: <strong>Acolhimento</strong>,
+            <strong>Monitoramento</strong> e <strong>Pós-Alta</strong> — o que muda é apenas a ação assistencial
+            considerada no filtro.
+          </p>
         </div>
 
         <!-- 1.3 AÇÕES DISPONÍVEIS PARA O PACIENTE -->

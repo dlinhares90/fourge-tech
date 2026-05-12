@@ -37,7 +37,7 @@
     }
 
     /* ── SIDEBAR (CBV + MA + JA + AUTOMACOES) ── */
-    #sidebar, #sidebar-ma, #sidebar-ja, #sidebar-automacoes, #sidebar-automonitoramento, #sidebar-automacoes-gerais {
+    #sidebar, #sidebar-ma, #sidebar-ja, #sidebar-automacoes, #sidebar-automonitoramento, #sidebar-automacoes-gerais, #sidebar-cockpit-navegacao {
       width: var(--sidebar-w);
       background: var(--blue-dark);
       color: #cde;
@@ -200,6 +200,33 @@
     #btn-dashboard-automacoes-gerais { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.25); color: rgba(255,255,255,.8); }
     #btn-dashboard-automacoes-gerais:hover, #btn-export-automacoes-gerais:hover { background: rgba(255,255,255,.28); border-color: rgba(255,255,255,.7); color:#fff; }
 
+    /* Cockpit Navegação — sidebar accent indigo/violeta */
+    #main-cockpit-navegacao { display: none; }
+    #sidebar-cockpit-navegacao { display: none; background: #1b2f3f; }
+    #sidebar-cockpit-navegacao nav a:hover, #sidebar-cockpit-navegacao nav a.active {
+      background: rgba(99, 102, 241, .18);
+      border-left-color: #6366f1;
+      color: #fff;
+    }
+    #sidebar-cockpit-navegacao .badge-cockpit-navegacao {
+      display: inline-block; background: #6366f1; color: #fff;
+      font-size: 10px; font-weight: 700; padding: 2px 10px;
+      border-radius: 10px; margin-top: 8px; letter-spacing: .5px;
+    }
+    #page-header-cockpit-navegacao {
+      background: linear-gradient(135deg, var(--blue-dark) 0%, #6366f1 100%);
+    }
+    #btn-dashboard-cockpit-navegacao, #btn-export-cockpit-navegacao {
+      background: transparent; color: #fff;
+      border: 1.5px solid rgba(255,255,255,.5);
+      padding: 8px 16px; border-radius: 6px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all .2s; margin-left: 8px;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    #btn-dashboard-cockpit-navegacao { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.25); color: rgba(255,255,255,.8); }
+    #btn-dashboard-cockpit-navegacao:hover, #btn-export-cockpit-navegacao:hover { background: rgba(255,255,255,.28); border-color: rgba(255,255,255,.7); color:#fff; }
+
     .mermaid-wrap {
       background: #f8fafc;
       border-radius: 8px;
@@ -315,8 +342,8 @@
       background: #2a7a5a; color: #fff;
       font-size: 10px; padding: 2px 8px; border-radius: 10px;
     }
-    #sidebar nav, #sidebar-ma nav, #sidebar-ja nav, #sidebar-automacoes nav, #sidebar-automonitoramento nav, #sidebar-automacoes-gerais nav { padding: 12px 0; flex: 1; }
-    #sidebar nav a, #sidebar-ma nav a, #sidebar-ja nav a, #sidebar-automacoes nav a, #sidebar-automonitoramento nav a, #sidebar-automacoes-gerais nav a {
+    #sidebar nav, #sidebar-ma nav, #sidebar-ja nav, #sidebar-automacoes nav, #sidebar-automonitoramento nav, #sidebar-automacoes-gerais nav, #sidebar-cockpit-navegacao nav { padding: 12px 0; flex: 1; }
+    #sidebar nav a, #sidebar-ma nav a, #sidebar-ja nav a, #sidebar-automacoes nav a, #sidebar-automonitoramento nav a, #sidebar-automacoes-gerais nav a, #sidebar-cockpit-navegacao nav a {
       display: block; padding: 8px 20px;
       color: #a8c4dc; text-decoration: none;
       font-size: 12.5px; line-height: 1.4;
@@ -332,11 +359,11 @@
     #sidebar-ma nav a:hover, #sidebar-ma nav a.active {
       border-left-color: #3ab882;
     }
-    #sidebar nav .nav-section, #sidebar-ma nav .nav-section, #sidebar-ja nav .nav-section, #sidebar-automacoes nav .nav-section, #sidebar-automonitoramento nav .nav-section, #sidebar-automacoes-gerais nav .nav-section {
+    #sidebar nav .nav-section, #sidebar-ma nav .nav-section, #sidebar-ja nav .nav-section, #sidebar-automacoes nav .nav-section, #sidebar-automonitoramento nav .nav-section, #sidebar-automacoes-gerais nav .nav-section, #sidebar-cockpit-navegacao nav .nav-section {
       font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
       color: #5a7a96; padding: 16px 20px 4px; font-weight: 600;
     }
-    #sidebar nav a.sub, #sidebar-ma nav a.sub, #sidebar-ja nav a.sub, #sidebar-automacoes nav a.sub, #sidebar-automonitoramento nav a.sub, #sidebar-automacoes-gerais nav a.sub { padding-left: 32px; font-size: 12px; }
+    #sidebar nav a.sub, #sidebar-ma nav a.sub, #sidebar-ja nav a.sub, #sidebar-automacoes nav a.sub, #sidebar-automonitoramento nav a.sub, #sidebar-automacoes-gerais nav a.sub, #sidebar-cockpit-navegacao nav a.sub { padding-left: 32px; font-size: 12px; }
 
     /* ── HAMBURGER ── */
     #menu-toggle {
@@ -347,7 +374,7 @@
     }
 
     /* ── MAIN (CBV + MA) ── */
-    #main, #main-ma, #main-ja, #main-automacoes, #main-automonitoramento, #main-automacoes-gerais {
+    #main, #main-ma, #main-ja, #main-automacoes, #main-automonitoramento, #main-automacoes-gerais, #main-cockpit-navegacao {
       margin-left: var(--sidebar-w);
       flex: 1;
       min-width: 0;
@@ -355,7 +382,7 @@
     #main-ma { display: none; }
 
     /* ── HEADER ── */
-    #page-header, #page-header-ma, #page-header-ja, #page-header-automacoes, #page-header-automonitoramento, #page-header-automacoes-gerais {
+    #page-header, #page-header-ma, #page-header-ja, #page-header-automacoes, #page-header-automonitoramento, #page-header-automacoes-gerais, #page-header-cockpit-navegacao {
       color: #fff;
       padding: 48px 48px 36px;
       background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-main) 100%);
@@ -870,10 +897,11 @@
       #btn-export-automacoes, #btn-dashboard-automacoes, #btn-sim-automacoes { display: none !important; }
       #btn-export-automonitoramento, #btn-dashboard-automonitoramento { display: none !important; }
       #btn-export-automacoes-gerais, #btn-dashboard-automacoes-gerais { display: none !important; }
+      #btn-export-cockpit-navegacao, #btn-dashboard-cockpit-navegacao { display: none !important; }
 
       /* Layout sem sidebar */
       body { background: #fff !important; }
-      #main, #main-ma, #main-ja, #main-automacoes, #main-automonitoramento, #main-automacoes-gerais { margin-left: 0 !important; }
+      #main, #main-ma, #main-ja, #main-automacoes, #main-automonitoramento, #main-automacoes-gerais, #main-cockpit-navegacao { margin-left: 0 !important; }
       #content { padding: 16px 0 !important; width: 100% !important; }
 
       /* Header impresso — mantém gradiente */
@@ -1446,6 +1474,24 @@
           <span>📱 Blip</span>
           <span>🔗 Dynamics CRM</span>
           <span>⚙️ Viver Bem</span>
+        </div>
+        <div class="pc-open">Abrir documentação →</div>
+      </div>
+
+      <!-- Projeto 7: Cockpit de Navegação -->
+      <div class="project-card" onclick="openProject('cockpit-navegacao')">
+        <div class="pc-top">
+          <div class="pc-icon" style="background:linear-gradient(135deg,#3c3489,#6366f1);">🧭</div>
+          <span class="pc-badge">Em elaboração</span>
+        </div>
+        <div class="pc-title">Cockpit de Navegação</div>
+        <div class="pc-sub">Operação Assistencial das Monitoras</div>
+        <div class="pc-desc">Documentação do Cockpit de Navegação: visão consolidada da carteira da monitora, indicadores operacionais do dia, execução de ações assistenciais e pesquisa global de pacientes.</div>
+        <div class="pc-meta">
+          <span>📋 Versão 1.0</span>
+          <span>🧭 Unimed POA</span>
+          <span>📅 2026</span>
+          <span>🩺 Monitoras</span>
         </div>
         <div class="pc-open">Abrir documentação →</div>
       </div>
@@ -7135,6 +7181,209 @@ flowchart LR
   </div><!-- /content-automacoes-gerais -->
 </div><!-- /main-automacoes-gerais -->
 
+<!-- ══════════════════════════════════════════════════════════════════
+     PROJETO: COCKPIT DE NAVEGAÇÃO
+══════════════════════════════════════════════════════════════════ -->
+<aside id="sidebar-cockpit-navegacao">
+  <div id="sidebar-logo">
+    <div class="org">Unimed POA</div>
+    <div class="title">Cockpit de Navegação</div>
+    <span class="badge-cockpit-navegacao">Operação Assistencial</span>
+  </div>
+  <nav>
+    <div class="nav-section">Documento</div>
+    <a href="#cn-sec1">1. Home — Indicadores Operacionais</a>
+    <a href="#cn-sec1-1" class="sub">1.1 Indicadores Apresentados</a>
+    <a href="#cn-sec1-2" class="sub">1.2 Navegação por Ações</a>
+    <a href="#cn-sec1-3" class="sub">1.3 Ações Disponíveis para o Paciente</a>
+    <a href="#cn-sec2">2. Pacientes</a>
+    <a href="#cn-sec2-1" class="sub">2.1 Listagem de Pacientes</a>
+    <a href="#cn-sec2-2" class="sub">2.2 Período Considerado</a>
+    <a href="#cn-sec2-3" class="sub">2.3 Pesquisa Global de Pacientes</a>
+  </nav>
+</aside>
+
+<div id="main-cockpit-navegacao">
+
+  <header id="page-header-cockpit-navegacao">
+    <div class="label">Cockpit de Navegação · Operação das Monitoras</div>
+    <h1>🧭 Cockpit de Navegação</h1>
+    <div class="subtitle">Visão consolidada da carteira, indicadores diários e execução de ações assistenciais</div>
+    <div class="meta">
+      <span class="chip"><span class="chip-icon">🧭</span> Unimed POA</span>
+      <span class="chip"><span class="chip-icon">📋</span> Em elaboração</span>
+      <button id="btn-dashboard-cockpit-navegacao" onclick="goHome()" title="Voltar ao dashboard">← Dashboard</button>
+      <button id="btn-export-cockpit-navegacao" onclick="window.print()" title="Exportar como PDF"><span>📄</span> Exportar PDF</button>
+    </div>
+  </header>
+
+  <div id="content-cockpit-navegacao" style="padding:40px 48px;width:100%;">
+
+    <!-- SEC 1: HOME -->
+    <div class="section-card" id="cn-sec1">
+      <div class="section-header">
+        <div class="section-number">1</div>
+        <h2>🏠 Home — Indicadores Operacionais</h2>
+      </div>
+      <div class="section-body">
+        <p>
+          A <strong>Home do Cockpit de Navegação</strong> tem como objetivo exibir os indicadores
+          operacionais das monitoras, considerando sempre o <strong>dia atual</strong>.
+        </p>
+        <p>
+          Nesta tela, a monitora poderá visualizar de forma consolidada a sua carteira, as ações
+          previstas para o dia e os pacientes em regime de internação.
+        </p>
+
+        <!-- 1.1 INDICADORES APRESENTADOS -->
+        <div class="subsection" id="cn-sec1-1">
+          <div class="subsection-title">1.1 📊 Indicadores Apresentados</div>
+          <table>
+            <thead>
+              <tr><th>Indicador</th><th>Descrição</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Total de Clientes</strong></td>
+                <td>Quantidade total de pacientes sob responsabilidade da monitora no dia.</td>
+              </tr>
+              <tr>
+                <td><strong>Ações a Realizar</strong></td>
+                <td>
+                  Lista consolidada das ações previstas para o dia, segmentadas em:
+                  <ul style="margin:6px 0 0 18px;">
+                    <li>Monitoramentos</li>
+                    <li>Pós-Alta</li>
+                    <li>Acolhimentos</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Pacientes Internados</strong></td>
+                <td>Lista e quantitativo de pacientes que se encontram em regime de internação.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 1.2 NAVEGAÇÃO POR AÇÕES -->
+        <div class="subsection" id="cn-sec1-2">
+          <div class="subsection-title">1.2 📋 Navegação por Ações</div>
+          <p>
+            Ao clicar em qualquer uma das listas de ações (<strong>Monitoramento</strong>,
+            <strong>Pós-Alta</strong> ou <strong>Acolhimentos</strong>), o sistema exibirá:
+          </p>
+          <ul>
+            <li>A <strong>lista de pacientes previstos para o dia</strong>, conforme a ação selecionada.</li>
+            <li>Os <strong>pacientes disponíveis</strong> para execução da ação correspondente.</li>
+          </ul>
+        </div>
+
+        <!-- 1.3 AÇÕES DISPONÍVEIS PARA O PACIENTE -->
+        <div class="subsection" id="cn-sec1-3">
+          <div class="subsection-title">1.3 📝 Ações Disponíveis para o Paciente</div>
+          <p>
+            Dentro da lista diária de pacientes, a monitora poderá:
+          </p>
+          <ul>
+            <li><strong>Realizar a ação do dia</strong> prevista para o paciente.</li>
+            <li><strong>Incluir Questionário</strong> assistencial.</li>
+            <li><strong>Registrar Ação Avulsa</strong>, quando necessário.</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SEC 2: PACIENTES -->
+    <div class="section-card" id="cn-sec2">
+      <div class="section-header">
+        <div class="section-number">2</div>
+        <h2>👥 Pacientes</h2>
+      </div>
+      <div class="section-body">
+        <p>
+          A tela <strong>Pacientes</strong> exibe todos os pacientes navegados em nome da monitora,
+          permitindo a visualização e execução das ações relacionadas ao acompanhamento assistencial.
+        </p>
+
+        <!-- 2.1 LISTAGEM DE PACIENTES -->
+        <div class="subsection" id="cn-sec2-1">
+          <div class="subsection-title">2.1 📋 Listagem de Pacientes</div>
+          <p>Nesta tela, serão apresentados:</p>
+          <ul>
+            <li>Todos os <strong>pacientes vinculados à monitora</strong>.</li>
+            <li>
+              As respectivas ações de:
+              <ul style="margin:6px 0 0 18px;">
+                <li>Monitoramento</li>
+                <li>Pós-Alta</li>
+                <li>Acolhimentos</li>
+              </ul>
+            </li>
+          </ul>
+          <p>As ações são organizadas em duas abas:</p>
+          <table>
+            <thead>
+              <tr><th>Aba</th><th>Descrição</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Atrasados</strong></td>
+                <td>Exibe ações que não foram realizadas dentro do prazo esperado.</td>
+              </tr>
+              <tr>
+                <td><strong>A Realizar</strong></td>
+                <td>Exibe ações previstas e ainda não executadas.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 2.2 PERÍODO CONSIDERADO -->
+        <div class="subsection" id="cn-sec2-2">
+          <div class="subsection-title">2.2 📅 Período Considerado</div>
+          <p>A listagem contempla um intervalo de:</p>
+          <ul>
+            <li><strong>3 meses retroativos</strong></li>
+            <li><strong>3 meses futuros</strong></li>
+          </ul>
+        </div>
+
+        <!-- 2.3 PESQUISA GLOBAL -->
+        <div class="subsection" id="cn-sec2-3">
+          <div class="subsection-title">2.3 🔍 Pesquisa Global de Pacientes</div>
+          <p>
+            Além da carteira própria, a tela disponibiliza a funcionalidade de <strong>Pesquisa Global</strong>,
+            que permite localizar pacientes <strong>fora da carteira da monitora</strong>.
+          </p>
+
+          <div class="subsection-title" style="font-size:13px;margin-top:14px;">🔎 Critérios de Busca</div>
+          <ul>
+            <li><strong>Nome completo</strong></li>
+            <li><strong>CPF</strong></li>
+          </ul>
+
+          <p>Ao localizar um paciente via Pesquisa Global, a monitora poderá:</p>
+          <ul>
+            <li>Realizar ações assistenciais.</li>
+            <li>Incluir questionários.</li>
+            <li>Registrar ações avulsas.</li>
+          </ul>
+
+          <div class="callout info" style="margin-top:16px;">
+            <strong>ℹ️ Observação</strong>
+            Mesmo que o paciente não esteja vinculado ao nome da monitora, a Pesquisa Global permite
+            a execução das ações assistenciais sobre o registro localizado.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /content-cockpit-navegacao -->
+</div><!-- /main-cockpit-navegacao -->
+
 <script>
 /* ── PAYLOADS ── */
 const H = { Authorization: "Bearer {token}", KeyDS: "production" };
@@ -7847,7 +8096,8 @@ const _projectNames = {
   ja:                 'Jornada Assistencial',
   automacoes:         'Automações — Alta Complexidade',
   automonitoramento:  'Automações — Automonitoramento',
-  'automacoes-gerais': 'Automações Gerais'
+  'automacoes-gerais': 'Automações Gerais',
+  'cockpit-navegacao': 'Cockpit de Navegação'
 };
 function openProject(id) {
   _pendingProject = id;
@@ -7885,7 +8135,7 @@ let _guestMode = false;
   if (isGuest) {
     _guestMode = true;
     const _gp = params.get('projeto');
-    const guestProj = _gp === 'ma' ? 'ma' : _gp === 'ja' ? 'ja' : _gp === 'automacoes' ? 'automacoes' : _gp === 'automonitoramento' ? 'automonitoramento' : _gp === 'automacoes-gerais' ? 'automacoes-gerais' : 'cbv';
+    const guestProj = _gp === 'ma' ? 'ma' : _gp === 'ja' ? 'ja' : _gp === 'automacoes' ? 'automacoes' : _gp === 'automonitoramento' ? 'automonitoramento' : _gp === 'automacoes-gerais' ? 'automacoes-gerais' : _gp === 'cockpit-navegacao' ? 'cockpit-navegacao' : 'cbv';
     // Oculta overlays instantaneamente
     const ov = document.getElementById('auth-overlay');
     if (ov) { ov.classList.remove('show'); }
@@ -7927,6 +8177,7 @@ function loadProject(id) {
   const isAuto = id === 'automacoes';
   const isMon  = id === 'automonitoramento';
   const isAG   = id === 'automacoes-gerais';
+  const isCN   = id === 'cockpit-navegacao';
   // sidebar
   const sbCbv  = document.getElementById('sidebar');
   const sbMa   = document.getElementById('sidebar-ma');
@@ -7934,12 +8185,14 @@ function loadProject(id) {
   const sbAuto = document.getElementById('sidebar-automacoes');
   const sbMon  = document.getElementById('sidebar-automonitoramento');
   const sbAG   = document.getElementById('sidebar-automacoes-gerais');
+  const sbCN   = document.getElementById('sidebar-cockpit-navegacao');
   if (sbCbv)  sbCbv.style.display  = isCbv  ? '' : 'none';
   if (sbMa)   sbMa.style.display   = isMa   ? 'flex' : 'none';
   if (sbJa)   sbJa.style.display   = isJa   ? 'flex' : 'none';
   if (sbAuto) sbAuto.style.display = isAuto ? 'flex' : 'none';
   if (sbMon)  sbMon.style.display  = isMon  ? 'flex' : 'none';
   if (sbAG)   sbAG.style.display   = isAG   ? 'flex' : 'none';
+  if (sbCN)   sbCN.style.display   = isCN   ? 'flex' : 'none';
   // main
   const mCbv  = document.getElementById('main');
   const mMa   = document.getElementById('main-ma');
@@ -7947,12 +8200,14 @@ function loadProject(id) {
   const mAuto = document.getElementById('main-automacoes');
   const mMon  = document.getElementById('main-automonitoramento');
   const mAG   = document.getElementById('main-automacoes-gerais');
+  const mCN   = document.getElementById('main-cockpit-navegacao');
   if (mCbv)  mCbv.style.display  = isCbv  ? 'block' : 'none';
   if (mMa)   mMa.style.display   = isMa   ? 'block' : 'none';
   if (mJa)   mJa.style.display   = isJa   ? 'block' : 'none';
   if (mAuto) mAuto.style.display = isAuto ? 'block' : 'none';
   if (mMon)  mMon.style.display  = isMon  ? 'block' : 'none';
   if (mAG)   mAG.style.display   = isAG   ? 'block' : 'none';
+  if (mCN)   mCN.style.display   = isCN   ? 'block' : 'none';
   if (isAuto || isMon || isAG) mermaid.run();
 }
 
@@ -8014,6 +8269,17 @@ function _applyGuestUI(proj) {
       const exportBtn = document.getElementById('btn-export-automacoes-gerais');
       meta.insertBefore(chip, exportBtn);
     }
+  } else if (proj === 'cockpit-navegacao') {
+    const dashCN = document.getElementById('btn-dashboard-cockpit-navegacao');
+    if (dashCN) dashCN.style.display = 'none';
+    const meta = document.querySelector('#page-header-cockpit-navegacao .meta');
+    if (meta) {
+      const chip = document.createElement('span');
+      chip.className = 'chip chip-guest';
+      chip.innerHTML = '<span class="chip-icon">👁</span> Visitante';
+      const exportBtn = document.getElementById('btn-export-cockpit-navegacao');
+      meta.insertBefore(chip, exportBtn);
+    }
   } else {
     // CBV (default)
     ['chip-version', 'chip-date', 'chip-status', 'btn-history', 'btn-dashboard'].forEach(id => {
@@ -8035,10 +8301,10 @@ function _applyGuestUI(proj) {
 function goHome() {
   if (_guestMode) return;
   sessionStorage.removeItem('_p');
-  ['main','main-ma','main-ja','main-automacoes','main-automonitoramento','main-automacoes-gerais'].forEach(id => {
+  ['main','main-ma','main-ja','main-automacoes','main-automonitoramento','main-automacoes-gerais','main-cockpit-navegacao'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
-  ['sidebar','sidebar-ma','sidebar-ja','sidebar-automacoes','sidebar-automonitoramento','sidebar-automacoes-gerais'].forEach(id => {
+  ['sidebar','sidebar-ma','sidebar-ja','sidebar-automacoes','sidebar-automonitoramento','sidebar-automacoes-gerais','sidebar-cockpit-navegacao'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   const ho = document.getElementById('home-overlay');

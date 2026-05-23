@@ -6549,17 +6549,17 @@ sequenceDiagram
           </ol>
 
           <p style="margin-top:16px;"><strong>Filtros aplicados localmente:</strong></p>
-          <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
-            <thead>
-              <tr style="background:#f1f5f9;"><th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Campo</th><th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Regra</th></tr>
-            </thead>
-            <tbody>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>complexidade</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">= <code>"Vidas Alta Complexidade"</code></td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>gestor</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">IS NULL</td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>cooperado</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">≠ <code>"1"</code></td></tr>
-              <tr><td style="padding:10px 14px;"><code>ultimo_status_linha_cuidado_primaria</code></td><td style="padding:10px 14px;">= <code>"Não Navegado"</code></td></tr>
-            </tbody>
-          </table>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Campo</th><th>Regra</th></tr></thead>
+              <tbody>
+                <tr><td><code>complexidade</code></td><td>= <code>"Vidas Alta Complexidade"</code></td></tr>
+                <tr><td><code>gestor</code></td><td>IS NULL</td></tr>
+                <tr><td><code>cooperado</code></td><td>≠ <code>"1"</code></td></tr>
+                <tr><td><code>ultimo_status_linha_cuidado_primaria</code></td><td>= <code>"Não Navegado"</code></td></tr>
+              </tbody>
+            </table>
+          </div>
 
           <p style="margin-top:16px;"><strong>Integrações utilizadas:</strong></p>
           <ul style="line-height:1.9;">
@@ -6570,12 +6570,12 @@ sequenceDiagram
           </ul>
 
           <p style="margin-top:16px;"><strong>Payload criado no CRM:</strong></p>
-          <pre style="background:#0f172a;color:#e2e8f0;padding:16px 20px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;overflow-x:auto;">{
-  "uni_estagiodajornada": 122880000,
-  "uni_elegivelaoprogramacronico": true,
-  "uni_name": "&lt;nome do paciente&gt;",
-  "uni_Contact@odata.bind": "/contacts(&lt;contactid&gt;)"
-}</pre>
+          <pre class="step-code"><span class="p">{</span>
+  <span class="k">"uni_estagiodajornada"</span><span class="p">:</span> <span class="n">122880000</span><span class="p">,</span>
+  <span class="k">"uni_elegivelaoprogramacronico"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+  <span class="k">"uni_name"</span><span class="p">:</span> <span class="s">"&lt;nome do paciente&gt;"</span><span class="p">,</span>
+  <span class="k">"uni_Contact@odata.bind"</span><span class="p">:</span> <span class="s">"/contacts(&lt;contactid&gt;)"</span>
+<span class="p">}</span></pre>
         </div>
 
         <div class="subsection" id="auto-sec7-2">
@@ -6589,7 +6589,8 @@ sequenceDiagram
           </ul>
 
           <p style="margin-top:20px;"><strong>1) Buscar pacientes na base de Vidas</strong></p>
-          <pre style="background:#0f172a;color:#e2e8f0;padding:14px 18px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;overflow-x:auto;">python consulta_alta_complexidade.py</pre>
+          <pre class="step-code"><span class="c"># Pagina API de Vidas e filtra os 100 prioritários</span>
+<span class="s">python consulta_alta_complexidade.py</span></pre>
           <p style="font-size:14px;color:#475569;">
             Pagina a API, aplica filtros locais, para nos 100 primeiros e ordena por <code>hs_escore_priorizacao</code> desc. Duração ≈ 2–3 min.
           </p>
@@ -6600,20 +6601,21 @@ sequenceDiagram
           </ul>
 
           <p style="margin-top:20px;"><strong>2) (Opcional) Gerar XLSX formatado</strong></p>
-          <pre style="background:#0f172a;color:#e2e8f0;padding:14px 18px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;overflow-x:auto;">python _gerar_xlsx.py</pre>
+          <pre class="step-code"><span class="c"># Lê os JSONs brutos e gera planilha formatada</span>
+<span class="s">python _gerar_xlsx.py</span></pre>
           <p style="font-size:14px;color:#475569;">
             Gera <code>alta_complexidade_sem_gestor_nao_navegado.xlsx</code> com cabeçalho azul, zebra, bordas, freeze pane e auto-filter.
           </p>
 
           <p style="margin-top:20px;"><strong>3) Enviar ao CRM Dynamics</strong></p>
           <p style="font-size:14px;"><em>Modo dry-run (default — NÃO envia POST):</em></p>
-          <pre style="background:#0f172a;color:#e2e8f0;padding:14px 18px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;overflow-x:auto;">python enviar_crm_linha_cuidado.py                 # dry-run com todos os 100
-python enviar_crm_linha_cuidado.py --limite 5      # dry-run só com 5</pre>
+          <pre class="step-code"><span class="s">python enviar_crm_linha_cuidado.py</span>                 <span class="c"># dry-run com todos os 100</span>
+<span class="s">python enviar_crm_linha_cuidado.py --limite 5</span>      <span class="c"># dry-run só com 5</span></pre>
 
           <p style="font-size:14px;"><em>Modo real (exige flag explícita <code>--confirmar</code>):</em></p>
-          <pre style="background:#0f172a;color:#e2e8f0;padding:14px 18px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;border-left:4px solid #ea580c;overflow-x:auto;">python enviar_crm_linha_cuidado.py --confirmar --limite 1   # 1º teste real
-python enviar_crm_linha_cuidado.py --confirmar --limite 5   # cria 5
-python enviar_crm_linha_cuidado.py --confirmar              # cria todos os 100</pre>
+          <pre class="step-code"><span class="s">python enviar_crm_linha_cuidado.py --confirmar --limite 1</span>   <span class="c"># 1º teste real</span>
+<span class="s">python enviar_crm_linha_cuidado.py --confirmar --limite 5</span>   <span class="c"># cria 5</span>
+<span class="s">python enviar_crm_linha_cuidado.py --confirmar</span>              <span class="c"># cria todos os 100</span></pre>
 
           <p style="margin-top:16px;font-size:14px;"><strong>Por paciente, o script faz:</strong></p>
           <ol style="line-height:1.9;font-size:14px;">
@@ -6623,12 +6625,12 @@ python enviar_crm_linha_cuidado.py --confirmar              # cria todos os 100<
           </ol>
 
           <p style="margin-top:16px;"><strong>Ordem recomendada para o primeiro uso:</strong></p>
-          <pre style="background:#0f172a;color:#e2e8f0;padding:14px 18px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;overflow-x:auto;">python consulta_alta_complexidade.py                       # 1. busca
-python enviar_crm_linha_cuidado.py --limite 5               # 2. dry-run
-# 3. inspecionar log_crm_linha_cuidado.csv
-python enviar_crm_linha_cuidado.py --confirmar --limite 1   # 4. 1 envio real
-# 5. validar no Dynamics o uni_linhadecuidadoid do log
-python enviar_crm_linha_cuidado.py --confirmar              # 6. resto</pre>
+          <pre class="step-code"><span class="s">python consulta_alta_complexidade.py</span>                       <span class="c"># 1. busca</span>
+<span class="s">python enviar_crm_linha_cuidado.py --limite 5</span>               <span class="c"># 2. dry-run</span>
+<span class="c"># 3. inspecionar log_crm_linha_cuidado.csv</span>
+<span class="s">python enviar_crm_linha_cuidado.py --confirmar --limite 1</span>   <span class="c"># 4. 1 envio real</span>
+<span class="c"># 5. validar no Dynamics o uni_linhadecuidadoid do log</span>
+<span class="s">python enviar_crm_linha_cuidado.py --confirmar</span>              <span class="c"># 6. resto</span></pre>
 
           <p style="margin-top:16px;"><strong>Travas de segurança:</strong></p>
           <ul style="line-height:1.9;font-size:14px;">
@@ -6643,54 +6645,49 @@ python enviar_crm_linha_cuidado.py --confirmar              # 6. resto</pre>
           <div class="subsection-title">7.3 Log e Troubleshooting</div>
 
           <p><strong>Status possíveis em <code>log_crm_linha_cuidado.csv</code>:</strong></p>
-          <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
-            <thead>
-              <tr style="background:#f1f5f9;"><th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Status</th><th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Significado</th></tr>
-            </thead>
-            <tbody>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>INFO</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Marcadores de início/fim de lote ou "processando"</td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>OK</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Etapa intermediária deu certo (achou contato, sem linha prévia)</td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>JA_POSSUI_LINHA</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Paciente já tem linha de cuidado — pulado</td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>SEM_CONTATO</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">CPF não encontrado em <code>contacts</code> do CRM</td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>DRY_RUN</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Payload montado, mas POST não enviado</td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>CRIADO</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">POST enviado e linha criada (modo <code>--confirmar</code>)</td></tr>
-              <tr><td style="padding:10px 14px;"><code>ERRO</code></td><td style="padding:10px 14px;">Falha HTTP/parse — registrada e batch segue</td></tr>
-            </tbody>
-          </table>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Status</th><th>Significado</th></tr></thead>
+              <tbody>
+                <tr><td><code>INFO</code></td><td>Marcadores de início/fim de lote ou "processando"</td></tr>
+                <tr><td><code>OK</code></td><td>Etapa intermediária deu certo (achou contato, sem linha prévia)</td></tr>
+                <tr><td><code>JA_POSSUI_LINHA</code></td><td>Paciente já tem linha de cuidado — pulado</td></tr>
+                <tr><td><code>SEM_CONTATO</code></td><td>CPF não encontrado em <code>contacts</code> do CRM</td></tr>
+                <tr><td><code>DRY_RUN</code></td><td>Payload montado, mas POST não enviado</td></tr>
+                <tr><td><code>CRIADO</code></td><td>POST enviado e linha criada (modo <code>--confirmar</code>)</td></tr>
+                <tr><td><code>ERRO</code></td><td>Falha HTTP/parse — registrada e batch segue</td></tr>
+              </tbody>
+            </table>
+          </div>
 
           <p style="margin-top:20px;"><strong>Configurações importantes:</strong></p>
-          <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
-            <thead>
-              <tr style="background:#f1f5f9;">
-                <th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Arquivo</th>
-                <th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Constante</th>
-                <th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Default</th>
-                <th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Observação</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td rowspan="3" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;vertical-align:top;"><code>consulta_alta_complexidade.py</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>MAX_RESULTADOS</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">100</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Quantos pacientes coletar antes de parar</td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>PAGE_SIZE</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">25</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Limite máximo da API</td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>SLEEP_BETWEEN_PAGES_S</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">0.3</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Pausa entre páginas (rate limit)</td></tr>
-              <tr><td rowspan="2" style="padding:10px 14px;vertical-align:top;"><code>enviar_crm_linha_cuidado.py</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>CRM_RESOURCE</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>…-hml.crm2…</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><strong>HML</strong> — trocar antes de produção</td></tr>
-              <tr><td style="padding:10px 14px;"><code>SLEEP_ENTRE_CPFS_S</code></td><td style="padding:10px 14px;">0.2</td><td style="padding:10px 14px;">Pausa entre pacientes</td></tr>
-            </tbody>
-          </table>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Arquivo</th><th>Constante</th><th>Default</th><th>Observação</th></tr></thead>
+              <tbody>
+                <tr><td rowspan="3"><code>consulta_alta_complexidade.py</code></td><td><code>MAX_RESULTADOS</code></td><td>100</td><td>Quantos pacientes coletar antes de parar</td></tr>
+                <tr><td><code>PAGE_SIZE</code></td><td>25</td><td>Limite máximo da API</td></tr>
+                <tr><td><code>SLEEP_BETWEEN_PAGES_S</code></td><td>0.3</td><td>Pausa entre páginas (rate limit)</td></tr>
+                <tr><td rowspan="2"><code>enviar_crm_linha_cuidado.py</code></td><td><code>CRM_RESOURCE</code></td><td><code>…-hml.crm2…</code></td><td><strong>HML</strong> — trocar antes de produção</td></tr>
+                <tr><td><code>SLEEP_ENTRE_CPFS_S</code></td><td>0.2</td><td>Pausa entre pacientes</td></tr>
+              </tbody>
+            </table>
+          </div>
 
           <p style="margin-top:20px;"><strong>Troubleshooting:</strong></p>
-          <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
-            <thead>
-              <tr style="background:#f1f5f9;"><th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Sintoma</th><th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Causa provável</th></tr>
-            </thead>
-            <tbody>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>401</code> no token Sensedia</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>CLIENT_SECRET</code> da Vidas expirado/revogado</td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>401</code> no token Azure AD</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>CRM_CLIENT_SECRET</code> expirado ou app sem permissão no tenant</td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>401</code> no GET de contato</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">App sem role no Dynamics (pedir ao time de CRM)</td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>400 Bad Request</code> ao filtrar Vidas</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Combinação de campos em <code>q=</code> não suportada — voltar a filtrar localmente</td></tr>
-              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Muitos <code>SEM_CONTATO</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">CPF da base Vidas não está em <code>contacts.uni_cpf</code> — alinhar com o time</td></tr>
-              <tr><td style="padding:10px 14px;">Token expira no meio do lote</td><td style="padding:10px 14px;">OK — há cache + refresh automático antes de expirar</td></tr>
-            </tbody>
-          </table>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Sintoma</th><th>Causa provável</th></tr></thead>
+              <tbody>
+                <tr><td><code>401</code> no token Sensedia</td><td><code>CLIENT_SECRET</code> da Vidas expirado/revogado</td></tr>
+                <tr><td><code>401</code> no token Azure AD</td><td><code>CRM_CLIENT_SECRET</code> expirado ou app sem permissão no tenant</td></tr>
+                <tr><td><code>401</code> no GET de contato</td><td>App sem role no Dynamics (pedir ao time de CRM)</td></tr>
+                <tr><td><code>400 Bad Request</code> ao filtrar Vidas</td><td>Combinação de campos em <code>q=</code> não suportada — voltar a filtrar localmente</td></tr>
+                <tr><td>Muitos <code>SEM_CONTATO</code></td><td>CPF da base Vidas não está em <code>contacts.uni_cpf</code> — alinhar com o time</td></tr>
+                <tr><td>Token expira no meio do lote</td><td>OK — há cache + refresh automático antes de expirar</td></tr>
+              </tbody>
+            </table>
+          </div>
 
           <div class="callout info" style="margin-top:20px;">
             <strong>📄 Spec técnica para reescrita em OutSystems ODC</strong>

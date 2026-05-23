@@ -5727,6 +5727,7 @@
     <a href="#auto-sec7-1" class="sub">7.1 Objetivo e Filtros</a>
     <a href="#auto-sec7-2" class="sub">7.2 Como Rodar</a>
     <a href="#auto-sec7-3" class="sub">7.3 Log e Troubleshooting</a>
+    <a href="#auto-sec7-4" class="sub">7.4 Dados de Retorno do CRM</a>
     <a href="#auto-sec8">8. Próximas Seções</a>
   </nav>
 </aside>
@@ -6702,6 +6703,98 @@ sequenceDiagram
             <strong>📄 Spec técnica para reescrita em OutSystems ODC</strong>
             O script está documentado em <code>docs/SPEC_OUTSYSTEMS_ODC.md</code> com entities, site properties,
             server actions e armadilhas (OAuth manual, <code>uni_Contact@odata.bind</code>, encoding do filtro ORDS, etc.).
+          </div>
+        </div>
+
+        <!-- 7.4 DADOS DE RETORNO DO CRM -->
+        <div class="subsection" id="auto-sec7-4">
+          <div class="subsection-title">7.4 Dados de Retorno do CRM — Mensagens WhatsApp (BLIP → Dynamics)</div>
+
+          <p>
+            Script Python complementar (<code>consulta_whatsapps_crm.py</code>) que <strong>lê os dados que
+            o BLIP devolve ao CRM</strong> através da entidade <code>uni_whatsapps</code>. Cada vez que o BLIP
+            dispara um template, recebe uma mensagem do cliente, ou recebe um <em>callback</em> de status do
+            WhatsApp (entregue, lido, falha), ele grava esse evento como um <code>uni_whatsapps</code> no
+            Dynamics 365. O script consulta essa entidade e devolve uma visão consolidada
+            <strong>(template, fila, status, resposta do cliente, falha)</strong> dos beneficiários ativos
+            no fluxo Viver Bem.
+          </p>
+
+          <div class="callout info">
+            <strong>📲 O que o BLIP grava no CRM</strong>
+            Para cada mensagem trafegada no WhatsApp, o BLIP escreve um registro em <code>uni_whatsapps</code>
+            contendo: <code>uni_template</code> (qual template foi disparado), <code>uni_numero_contato_cliente</code>
+            (telefone do beneficiário), <code>_uni_contato_value</code> (FK para o contato no CRM),
+            <code>uni_status_mensagem</code> (código do status atual), <code>description</code> (texto da resposta
+            do cliente, quando existir) e <code>uni_falha</code> (motivo da falha, quando aplicável).
+          </div>
+
+          <p style="margin-top:16px;"><strong>Endpoint consultado:</strong></p>
+          <pre class="step-code"><span class="k">GET</span> <span class="s">{{resource}}/api/data/v9.2/uni_whatsapps</span>
+   <span class="p">?</span><span class="k">$select</span><span class="p">=</span><span class="s">scheduledend,uni_numero_contato_cliente,_uni_contato_value,</span>
+            <span class="s">uni_template,uni_fila,uni_status_mensagem,description,uni_falha</span>
+   <span class="p">&amp;</span><span class="k">$orderby</span><span class="p">=</span><span class="s">scheduledend desc</span></pre>
+
+          <p style="margin-top:16px;"><strong>Mapa de status (<code>uni_status_mensagem</code>):</strong></p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Status</th><th>Código (OptionSet)</th><th>Significado</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Enviada</strong></td><td><code>122880000</code></td><td>BLIP enviou o template ao WhatsApp</td></tr>
+                <tr><td><strong>Recebida</strong></td><td><code>122880001</code></td><td>Mensagem do cliente recebida pelo BLIP (resposta vai em <code>description</code>)</td></tr>
+                <tr><td><strong>Entregue</strong></td><td><code>122880002</code></td><td>WhatsApp confirmou entrega ao aparelho do cliente</td></tr>
+                <tr><td><strong>Lida</strong></td><td><code>122880003</code></td><td>Cliente abriu a conversa (✓✓ azul)</td></tr>
+                <tr><td><strong>Falha</strong></td><td><code>122880004</code></td><td>Falha de entrega — motivo em <code>uni_falha</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p style="margin-top:16px;"><strong>O que o script faz:</strong></p>
+          <ol style="line-height:1.9;">
+            <li>Autentica no Azure AD (<code>client_credentials</code>) usando o mesmo tenant Unimed POA.</li>
+            <li>Pagina o <code>GET /uni_whatsapps</code> (200 por página) ordenado por <code>scheduledend desc</code>.</li>
+            <li>Decodifica o código numérico de <code>uni_status_mensagem</code> para o rótulo legível.</li>
+            <li>Grava tudo em <code>retorno_whatsapps_crm.csv</code> e imprime um resumo agregado por status.</li>
+          </ol>
+
+          <p style="margin-top:16px;"><strong>Uso:</strong></p>
+          <pre class="step-code"><span class="s">python consulta_whatsapps_crm.py</span>                              <span class="c"># últimos 500</span>
+<span class="s">python consulta_whatsapps_crm.py --limite 100</span>                   <span class="c"># últimos 100</span>
+<span class="s">python consulta_whatsapps_crm.py --desde 2026-05-01</span>             <span class="c"># filtra scheduledend</span>
+<span class="s">python consulta_whatsapps_crm.py --template vb_experiencia_paciente</span>  <span class="c"># só esse template</span>
+<span class="s">python consulta_whatsapps_crm.py --status 122880004</span>             <span class="c"># só falhas</span></pre>
+
+          <p style="margin-top:16px;"><strong>Saída — <code>retorno_whatsapps_crm.csv</code>:</strong></p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Coluna</th><th>Origem</th></tr></thead>
+              <tbody>
+                <tr><td><code>activityid</code></td><td>PK da activity no Dynamics</td></tr>
+                <tr><td><code>scheduledend</code></td><td>Timestamp do evento (envio/recebimento)</td></tr>
+                <tr><td><code>numero_contato</code></td><td><code>uni_numero_contato_cliente</code> — telefone+@wa.gw.msging.net do BLIP</td></tr>
+                <tr><td><code>contato_id</code></td><td><code>_uni_contato_value</code> — FK para o registro em <code>contacts</code></td></tr>
+                <tr><td><code>template</code></td><td><code>uni_template</code> — ex: <code>vb_experiencia_paciente</code>, <code>vb_monitora_paciente</code></td></tr>
+                <tr><td><code>fila</code></td><td><code>uni_fila</code> — fila BLIP de origem</td></tr>
+                <tr><td><code>status_codigo</code> + <code>status</code></td><td>OptionSet numérico e rótulo decodificado</td></tr>
+                <tr><td><code>descricao_resposta</code></td><td><code>description</code> — texto livre da resposta do cliente, quando houver</td></tr>
+                <tr><td><code>falha</code></td><td><code>uni_falha</code> — motivo quando <code>status = Falha</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p style="margin-top:16px;"><strong>Credenciais (mesmas do script da seção 7):</strong></p>
+          <ul style="line-height:1.9;">
+            <li><code>CRM_TENANT_ID</code> = <code>062096f2-76c0-4ed8-b8bf-6644178496b2</code></li>
+            <li><code>CRM_CLIENT_ID</code> = <code>0a5a06df-63ed-4942-a056-bab0ede8142d</code></li>
+            <li><code>CRM_CLIENT_SECRET</code> = (definido no arquivo)</li>
+            <li><code>CRM_RESOURCE</code> = <code>https://unimedpoa-hml.crm2.dynamics.com</code> (HML)</li>
+          </ul>
+
+          <div class="callout warn" style="margin-top:16px;">
+            <strong>⚠️ Uso recomendado</strong>
+            Esse script serve para <strong>auditoria pós-envio</strong> — checar quantos templates foram lidos,
+            ver respostas dos clientes para enviar à equipe de saúde populacional, e identificar falhas de entrega
+            recorrentes. Não substitui o BLIP para fluxos de mensageria ativa.
           </div>
         </div>
 

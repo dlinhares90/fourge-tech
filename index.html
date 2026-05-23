@@ -5723,7 +5723,11 @@
     <a href="#auto-sec6-4" class="sub">6.4 Linha de Cuidado</a>
     <a href="#auto-sec6-5" class="sub">6.5 WhatsApp / BLIP</a>
     <a href="#auto-sec6-6" class="sub">6.6 Exemplo prático (Alta)</a>
-    <a href="#auto-sec7">7. Próximas Seções</a>
+    <a href="#auto-sec7">7. Script de Captação (Python)</a>
+    <a href="#auto-sec7-1" class="sub">7.1 Objetivo e Filtros</a>
+    <a href="#auto-sec7-2" class="sub">7.2 Como Rodar</a>
+    <a href="#auto-sec7-3" class="sub">7.3 Log e Troubleshooting</a>
+    <a href="#auto-sec8">8. Próximas Seções</a>
   </nav>
 </aside>
 
@@ -6512,10 +6516,196 @@ sequenceDiagram
       </div>
     </div>
 
-    <!-- SEC 7: PRÓXIMAS SEÇÕES -->
+    <!-- SEC 7: SCRIPT DE CAPTAÇÃO -->
     <div class="section-card" id="auto-sec7">
       <div class="section-header">
         <div class="section-number">7</div>
+        <h2>Script de Captação — Alta Complexidade → CRM Viver Bem</h2>
+      </div>
+      <div class="section-body">
+
+        <p>
+          Script Python que alimenta a fila de captação a partir da base de Vidas da Unimed POA,
+          selecionando os <strong>100 pacientes prioritários</strong> de Alta Complexidade sem gestor
+          e criando automaticamente a <strong>Linha de Cuidado</strong> no Dynamics 365 (Viver Bem CRM).
+        </p>
+
+        <div class="callout warn">
+          <strong>⚠️ Ambiente atual</strong>
+          CRM apontando para <code>unimedpoa-hml.crm2.dynamics.com</code> (HML).
+          Antes de virar produção, alterar a constante <code>CRM_RESOURCE</code> e validar com dry-run.
+        </div>
+
+        <div class="subsection" id="auto-sec7-1">
+          <div class="subsection-title">7.1 Objetivo e Filtros</div>
+          <p>O script implementa o seguinte fluxo:</p>
+          <ol style="line-height:1.9;">
+            <li>Autenticar na API da Unimed POA (Sensedia, OAuth2 <code>client_credentials</code>).</li>
+            <li>Buscar pacientes na base de Vidas (paginado, 25 em 25).</li>
+            <li>Filtrar localmente: <strong>Alta Complexidade</strong> + sem gestor + sem cooperado + status <em>"Não Navegado"</em>.</li>
+            <li>Ordenar por <code>hs_escore_priorizacao</code> desc, manter os <strong>100 primeiros</strong>.</li>
+            <li>Para cada um: autenticar no Azure AD, buscar <code>contactid</code> por CPF no Dynamics, criar Linha de Cuidado.</li>
+            <li>Logar cada passo (sucesso / erro / dry-run) em CSV.</li>
+          </ol>
+
+          <p style="margin-top:16px;"><strong>Filtros aplicados localmente:</strong></p>
+          <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
+            <thead>
+              <tr style="background:#f1f5f9;"><th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Campo</th><th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Regra</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>complexidade</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">= <code>"Vidas Alta Complexidade"</code></td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>gestor</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">IS NULL</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>cooperado</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">≠ <code>"1"</code></td></tr>
+              <tr><td style="padding:10px 14px;"><code>ultimo_status_linha_cuidado_primaria</code></td><td style="padding:10px 14px;">= <code>"Não Navegado"</code></td></tr>
+            </tbody>
+          </table>
+
+          <p style="margin-top:16px;"><strong>Integrações utilizadas:</strong></p>
+          <ul style="line-height:1.9;">
+            <li><strong>Sensedia (OAuth2)</strong> — <code>POST /oauth2/v1/access-token</code></li>
+            <li><strong>API Vidas</strong> — <code>GET /analyticsBackoffice/v1/vidas</code> (paginação 25 em 25)</li>
+            <li><strong>Azure AD</strong> — <code>POST /{tenant}/oauth2/token</code></li>
+            <li><strong>Dynamics 365</strong> — <code>GET /contacts?$filter=uni_cpf eq '…'</code> → <code>POST /uni_linhadecuidados</code></li>
+          </ul>
+
+          <p style="margin-top:16px;"><strong>Payload criado no CRM:</strong></p>
+          <pre style="background:#0f172a;color:#e2e8f0;padding:16px 20px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;overflow-x:auto;">{
+  "uni_estagiodajornada": 122880000,
+  "uni_elegivelaoprogramacronico": true,
+  "uni_name": "&lt;nome do paciente&gt;",
+  "uni_Contact@odata.bind": "/contacts(&lt;contactid&gt;)"
+}</pre>
+        </div>
+
+        <div class="subsection" id="auto-sec7-2">
+          <div class="subsection-title">7.2 Como Rodar</div>
+
+          <p><strong>Pré-requisitos:</strong></p>
+          <ul style="line-height:1.9;">
+            <li>Python 3 (<code>python --version</code>) — sem dependências externas (só stdlib).</li>
+            <li>Opcional para XLSX formatado: <code>pip install openpyxl</code>.</li>
+            <li>Credenciais Sensedia + Azure AD (tokens obtidos em runtime via <code>client_credentials</code>).</li>
+          </ul>
+
+          <p style="margin-top:20px;"><strong>1) Buscar pacientes na base de Vidas</strong></p>
+          <pre style="background:#0f172a;color:#e2e8f0;padding:14px 18px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;overflow-x:auto;">python consulta_alta_complexidade.py</pre>
+          <p style="font-size:14px;color:#475569;">
+            Pagina a API, aplica filtros locais, para nos 100 primeiros e ordena por <code>hs_escore_priorizacao</code> desc. Duração ≈ 2–3 min.
+          </p>
+          <p style="font-size:14px;"><strong>Saídas:</strong></p>
+          <ul style="line-height:1.8;font-size:14px;">
+            <li><code>alta_complexidade_sem_gestor_nao_navegado.csv</code> — lista final ordenada (entrada da etapa 3).</li>
+            <li><code>respostas_alta_complexidade/pagina_*.json</code> — JSON bruto de cada página.</li>
+          </ul>
+
+          <p style="margin-top:20px;"><strong>2) (Opcional) Gerar XLSX formatado</strong></p>
+          <pre style="background:#0f172a;color:#e2e8f0;padding:14px 18px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;overflow-x:auto;">python _gerar_xlsx.py</pre>
+          <p style="font-size:14px;color:#475569;">
+            Gera <code>alta_complexidade_sem_gestor_nao_navegado.xlsx</code> com cabeçalho azul, zebra, bordas, freeze pane e auto-filter.
+          </p>
+
+          <p style="margin-top:20px;"><strong>3) Enviar ao CRM Dynamics</strong></p>
+          <p style="font-size:14px;"><em>Modo dry-run (default — NÃO envia POST):</em></p>
+          <pre style="background:#0f172a;color:#e2e8f0;padding:14px 18px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;overflow-x:auto;">python enviar_crm_linha_cuidado.py                 # dry-run com todos os 100
+python enviar_crm_linha_cuidado.py --limite 5      # dry-run só com 5</pre>
+
+          <p style="font-size:14px;"><em>Modo real (exige flag explícita <code>--confirmar</code>):</em></p>
+          <pre style="background:#0f172a;color:#e2e8f0;padding:14px 18px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;border-left:4px solid #ea580c;overflow-x:auto;">python enviar_crm_linha_cuidado.py --confirmar --limite 1   # 1º teste real
+python enviar_crm_linha_cuidado.py --confirmar --limite 5   # cria 5
+python enviar_crm_linha_cuidado.py --confirmar              # cria todos os 100</pre>
+
+          <p style="margin-top:16px;font-size:14px;"><strong>Por paciente, o script faz:</strong></p>
+          <ol style="line-height:1.9;font-size:14px;">
+            <li><code>checar_linha_existente</code> — se já tem linha, loga <code>JA_POSSUI_LINHA</code> e pula (não duplica).</li>
+            <li><code>buscar_contato</code> — se não acha CPF em <code>contacts</code>, loga <code>SEM_CONTATO</code> e pula.</li>
+            <li><code>criar_linha_cuidado</code> — em dry-run só monta payload; em modo real cria e grava <code>uni_linhadecuidadoid</code>.</li>
+          </ol>
+
+          <p style="margin-top:16px;"><strong>Ordem recomendada para o primeiro uso:</strong></p>
+          <pre style="background:#0f172a;color:#e2e8f0;padding:14px 18px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;overflow-x:auto;">python consulta_alta_complexidade.py                       # 1. busca
+python enviar_crm_linha_cuidado.py --limite 5               # 2. dry-run
+# 3. inspecionar log_crm_linha_cuidado.csv
+python enviar_crm_linha_cuidado.py --confirmar --limite 1   # 4. 1 envio real
+# 5. validar no Dynamics o uni_linhadecuidadoid do log
+python enviar_crm_linha_cuidado.py --confirmar              # 6. resto</pre>
+
+          <p style="margin-top:16px;"><strong>Travas de segurança:</strong></p>
+          <ul style="line-height:1.9;font-size:14px;">
+            <li>Default é <strong>dry-run</strong>. Sem <code>--confirmar</code>, nunca envia POST.</li>
+            <li>Com <code>--confirmar</code>, espera 5s antes de começar (Ctrl+C aborta).</li>
+            <li>Erro num CPF é logado e o lote continua.</li>
+            <li>Log em append + flush imediato — dá pra acompanhar em outra janela com <code>tail -f</code>.</li>
+          </ul>
+        </div>
+
+        <div class="subsection" id="auto-sec7-3">
+          <div class="subsection-title">7.3 Log e Troubleshooting</div>
+
+          <p><strong>Status possíveis em <code>log_crm_linha_cuidado.csv</code>:</strong></p>
+          <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
+            <thead>
+              <tr style="background:#f1f5f9;"><th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Status</th><th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Significado</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>INFO</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Marcadores de início/fim de lote ou "processando"</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>OK</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Etapa intermediária deu certo (achou contato, sem linha prévia)</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>JA_POSSUI_LINHA</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Paciente já tem linha de cuidado — pulado</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>SEM_CONTATO</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">CPF não encontrado em <code>contacts</code> do CRM</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>DRY_RUN</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Payload montado, mas POST não enviado</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>CRIADO</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">POST enviado e linha criada (modo <code>--confirmar</code>)</td></tr>
+              <tr><td style="padding:10px 14px;"><code>ERRO</code></td><td style="padding:10px 14px;">Falha HTTP/parse — registrada e batch segue</td></tr>
+            </tbody>
+          </table>
+
+          <p style="margin-top:20px;"><strong>Configurações importantes:</strong></p>
+          <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
+            <thead>
+              <tr style="background:#f1f5f9;">
+                <th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Arquivo</th>
+                <th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Constante</th>
+                <th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Default</th>
+                <th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Observação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td rowspan="3" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;vertical-align:top;"><code>consulta_alta_complexidade.py</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>MAX_RESULTADOS</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">100</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Quantos pacientes coletar antes de parar</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>PAGE_SIZE</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">25</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Limite máximo da API</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>SLEEP_BETWEEN_PAGES_S</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">0.3</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Pausa entre páginas (rate limit)</td></tr>
+              <tr><td rowspan="2" style="padding:10px 14px;vertical-align:top;"><code>enviar_crm_linha_cuidado.py</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>CRM_RESOURCE</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>…-hml.crm2…</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><strong>HML</strong> — trocar antes de produção</td></tr>
+              <tr><td style="padding:10px 14px;"><code>SLEEP_ENTRE_CPFS_S</code></td><td style="padding:10px 14px;">0.2</td><td style="padding:10px 14px;">Pausa entre pacientes</td></tr>
+            </tbody>
+          </table>
+
+          <p style="margin-top:20px;"><strong>Troubleshooting:</strong></p>
+          <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
+            <thead>
+              <tr style="background:#f1f5f9;"><th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Sintoma</th><th style="text-align:left;padding:10px 14px;border-bottom:1px solid #e2e8f0;">Causa provável</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>401</code> no token Sensedia</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>CLIENT_SECRET</code> da Vidas expirado/revogado</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>401</code> no token Azure AD</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>CRM_CLIENT_SECRET</code> expirado ou app sem permissão no tenant</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>401</code> no GET de contato</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">App sem role no Dynamics (pedir ao time de CRM)</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;"><code>400 Bad Request</code> ao filtrar Vidas</td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Combinação de campos em <code>q=</code> não suportada — voltar a filtrar localmente</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">Muitos <code>SEM_CONTATO</code></td><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">CPF da base Vidas não está em <code>contacts.uni_cpf</code> — alinhar com o time</td></tr>
+              <tr><td style="padding:10px 14px;">Token expira no meio do lote</td><td style="padding:10px 14px;">OK — há cache + refresh automático antes de expirar</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout info" style="margin-top:20px;">
+            <strong>📄 Spec técnica para reescrita em OutSystems ODC</strong>
+            O script está documentado em <code>docs/SPEC_OUTSYSTEMS_ODC.md</code> com entities, site properties,
+            server actions e armadilhas (OAuth manual, <code>uni_Contact@odata.bind</code>, encoding do filtro ORDS, etc.).
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SEC 8: PRÓXIMAS SEÇÕES -->
+    <div class="section-card" id="auto-sec8">
+      <div class="section-header">
+        <div class="section-number">8</div>
         <h2>Próximas Seções a Documentar</h2>
       </div>
       <div class="section-body">

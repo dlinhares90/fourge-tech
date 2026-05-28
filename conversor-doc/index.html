@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Conversor de Documentação → HTML</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: #1e272e; color: #ecf0f1; height: 100vh; display: flex; flex-direction: column; }
+  .topbar { background: #00995d; padding: 14px 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+  .topbar h1 { font-size: 1.2em; flex: 1; }
+  .topbar input { padding: 6px 10px; border-radius: 4px; border: none; font-size: 0.9em; width: 280px; }
+  .topbar button { background: #fff; color: #00995d; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 0.9em; }
+  .topbar button:hover { background: #e8f5e9; }
+  .topbar button.secondary { background: transparent; color: white; border: 1px solid white; }
+  .topbar button.secondary:hover { background: rgba(255,255,255,0.15); }
+  .main { display: flex; flex: 1; overflow: hidden; }
+  .pane { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .pane-header { padding: 10px 15px; background: #2c3e50; font-size: 0.85em; font-weight: 600; border-bottom: 2px solid #00995d; }
+  textarea { flex: 1; width: 100%; padding: 18px; font-family: "Consolas", "Courier New", monospace; font-size: 0.92em; background: #2d3436; color: #ecf0f1; border: none; resize: none; outline: none; line-height: 1.5; }
+  iframe { flex: 1; width: 100%; border: none; background: white; }
+  .pane + .pane { border-left: 2px solid #00995d; }
+  .hint { padding: 10px 15px; background: #34495e; font-size: 0.8em; color: #bdc3c7; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>📝 Conversor de Documentação → HTML</h1>
+  <input type="text" id="docTitle" placeholder="Título do documento" value="Documentação Técnica">
+  <button onclick="convert()">🔄 Converter</button>
+  <button class="secondary" onclick="download()">💾 Baixar HTML</button>
+  <button class="secondary" onclick="loadExample()">📋 Exemplo</button>
+</div>
+
+<div class="main">
+  <div class="pane">
+    <div class="pane-header">ENTRADA — Cole o texto da documentação</div>
+    <textarea id="input" placeholder="Cole aqui seu texto livre da documentação...
+
+Dicas de formatação automática:
+- Linhas curtas numeradas (1. Título, 2. Outro) viram seções
+- POST /caminho ou GET /caminho viram endpoints
+- Blocos { ... } JSON viram code blocks
+- Linhas com TAB ou múltiplos espaços viram tabelas
+- ⚠️ Alerta / 💡 Dica viram caixas de alerta
+- URLs viram links automáticos
+- Linhas começando com - viram listas"></textarea>
+    <div class="hint">💡 Após colar, clique em <strong>Converter</strong>. Use o título do topo para nomear o documento.</div>
+  </div>
+  <div class="pane">
+    <div class="pane-header">SAÍDA — Preview do HTML gerado</div>
+    <iframe id="preview"></iframe>
+  </div>
+</div>
+
+<script>
+const CSS = `
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #2c3e50; background: #f5f7fa; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+  header { background: linear-gradient(135deg, #00995d 0%, #007a4a 100%); color: white; padding: 40px 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+  header h1 { font-size: 2.2em; margin-bottom: 8px; }
+  nav { background: white; padding: 15px 20px; border-bottom: 2px solid #e1e8ed; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; max-width: 1100px; margin: 0 auto; justify-content: center; }
+  nav a { color: #00995d; text-decoration: none; padding: 6px 14px; border-radius: 20px; font-size: 0.9em; font-weight: 500; transition: all 0.2s; }
+  nav a:hover { background: #00995d; color: white; }
+  section { background: white; padding: 30px; margin-bottom: 25px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  h2 { color: #00995d; border-bottom: 3px solid #00995d; padding-bottom: 10px; margin-bottom: 20px; font-size: 1.6em; }
+  h3 { color: #2c3e50; margin: 20px 0 12px; font-size: 1.25em; }
+  h4 { color: #34495e; margin: 15px 0 8px; }
+  p { margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; margin: 15px 0; background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  th { background: #00995d; color: white; text-align: left; padding: 12px; font-weight: 600; }
+  td { padding: 10px 12px; border-bottom: 1px solid #e1e8ed; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: #f8f9fa; }
+  .endpoint { background: #2c3e50; color: #ecf0f1; padding: 10px 15px; border-radius: 6px; font-family: monospace; margin: 10px 0; }
+  .method { display: inline-block; color: white; padding: 3px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; margin-right: 8px; }
+  .method-post { background: #2ecc71; }
+  .method-get { background: #3498db; }
+  .method-put { background: #f39c12; }
+  .method-delete { background: #e74c3c; }
+  pre { background: #1e272e; color: #d2dae2; padding: 18px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: 0.88em; line-height: 1.5; }
+  code { font-family: "Consolas", monospace; }
+  .inline-code { background: #f1f2f6; color: #e74c3c; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; font-family: monospace; }
+  .alert { padding: 15px 20px; border-radius: 6px; margin: 15px 0; border-left: 4px solid; }
+  .alert-warning { background: #fff3cd; border-color: #ffc107; color: #856404; }
+  .alert-info { background: #d1ecf1; border-color: #17a2b8; color: #0c5460; }
+  .alert-danger { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+  ul.bullet { padding-left: 25px; margin: 10px 0; }
+  ul.bullet li { margin-bottom: 6px; }
+  a.link { color: #0078d4; text-decoration: none; }
+  a.link:hover { text-decoration: underline; }
+  footer { text-align: center; padding: 30px 20px; color: #7f8c8d; font-size: 0.9em; }
+`;
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function slugify(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+}
+
+function linkifyUrls(s) {
+  return s.replace(/(https?:\/\/[^\s)]+)/g, '<a class="link" href="$1" target="_blank" rel="noopener">$1</a>');
+}
+
+function inlineFormat(s) {
+  s = escapeHtml(s);
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/`([^`]+)`/g, '<span class="inline-code">$1</span>');
+  s = linkifyUrls(s);
+  return s;
+}
+
+function parse(text) {
+  const lines = text.split(/\r?\n/);
+  const sections = [];
+  let currentSec = null;
+  let buffer = [];
+
+  const flushBuffer = () => {
+    if (!currentSec || buffer.length === 0) { buffer = []; return; }
+    currentSec.blocks.push(...parseBlocks(buffer));
+    buffer = [];
+  };
+
+  const sectionRegex = /^(\d+)\.\s+(.+)$/;
+
+  for (const line of lines) {
+    const m = line.match(sectionRegex);
+    if (m && m[2].length < 80 && !m[2].includes(':')) {
+      flushBuffer();
+      currentSec = { num: m[1], title: m[2].trim(), blocks: [] };
+      sections.push(currentSec);
+    } else {
+      if (!currentSec) {
+        currentSec = { num: '', title: '', blocks: [] };
+        sections.push(currentSec);
+      }
+      buffer.push(line);
+    }
+  }
+  flushBuffer();
+  return sections;
+}
+
+function parseBlocks(lines) {
+  const blocks = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (!trimmed) { i++; continue; }
+
+    // JSON block
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      let depth = 0, jsonLines = [], j = i;
+      for (; j < lines.length; j++) {
+        jsonLines.push(lines[j]);
+        for (const ch of lines[j]) {
+          if (ch === '{' || ch === '[') depth++;
+          else if (ch === '}' || ch === ']') depth--;
+        }
+        if (depth <= 0 && jsonLines.length > 0) { j++; break; }
+      }
+      blocks.push({ type: 'code', content: jsonLines.join('\n') });
+      i = j;
+      continue;
+    }
+
+    // Endpoint
+    const epMatch = trimmed.match(/^(?:Endpoint:\s*)?(GET|POST|PUT|DELETE|PATCH)\s+(\/\S+)/i);
+    if (epMatch) {
+      blocks.push({ type: 'endpoint', method: epMatch[1].toUpperCase(), path: epMatch[2] });
+      i++;
+      continue;
+    }
+
+    // Alert
+    if (/^[⚠️💡❌✅]/.test(trimmed) || /^(Alerta|Dica|Importante|Atenção|Aviso):?$/i.test(trimmed)) {
+      const alertLines = [trimmed];
+      let j = i + 1;
+      while (j < lines.length && lines[j].trim() && !lines[j].match(sectionRegexInner) && !/^[⚠️💡❌✅]/.test(lines[j].trim())) {
+        if (lines[j].trim().match(/^(GET|POST|PUT|DELETE)\s+\//i)) break;
+        if (lines[j].trim().startsWith('{')) break;
+        alertLines.push(lines[j].trim());
+        j++;
+      }
+      let kind = 'info';
+      if (/⚠️|alerta|atenção|aviso/i.test(trimmed)) kind = 'warning';
+      if (/❌|erro|falha/i.test(trimmed)) kind = 'danger';
+      blocks.push({ type: 'alert', kind, content: alertLines.join(' ') });
+      i = j;
+      continue;
+    }
+
+    // Subheading (linha curta seguida de tabela ou conteúdo, sem ponto final, com palavras tipo "Headers", "Body", "Response")
+    if (/^(Headers|Body|Response|Regras|Exemplo|Configuração|Variáveis|Parâmetros|Etapas|Headers obrigatórios|Tabela)/i.test(trimmed) && trimmed.length < 60) {
+      blocks.push({ type: 'subheading', content: trimmed });
+      i++;
+      continue;
+    }
+
+    // List
+    if (/^[-•*]\s+/.test(trimmed)) {
+      const items = [];
+      while (i < lines.length && /^[-•*]\s+/.test(lines[i].trim())) {
+        items.push(lines[i].trim().replace(/^[-•*]\s+/, ''));
+        i++;
+      }
+      blocks.push({ type: 'list', items });
+      continue;
+    }
+
+    // Table heuristic: 2+ consecutive lines with TAB or 2+ spaces between columns
+    const tabSplit = line.split(/\t+| {2,}/).filter(Boolean);
+    if (tabSplit.length >= 2) {
+      const rows = [tabSplit];
+      let j = i + 1;
+      while (j < lines.length) {
+        const next = lines[j];
+        if (!next.trim()) break;
+        const cols = next.split(/\t+| {2,}/).filter(Boolean);
+        if (cols.length < 2) break;
+        rows.push(cols);
+        j++;
+      }
+      if (rows.length >= 2) {
+        blocks.push({ type: 'table', rows });
+        i = j;
+        continue;
+      }
+    }
+
+    // Paragraph (group consecutive non-empty lines)
+    const paraLines = [trimmed];
+    let j = i + 1;
+    while (j < lines.length) {
+      const next = lines[j].trim();
+      if (!next) break;
+      if (next.match(sectionRegexInner)) break;
+      if (next.startsWith('{') || next.startsWith('[')) break;
+      if (/^(GET|POST|PUT|DELETE)\s+\//i.test(next)) break;
+      if (/^[-•*]\s+/.test(next)) break;
+      if (/^[⚠️💡❌✅]/.test(next)) break;
+      const cols = lines[j].split(/\t+| {2,}/).filter(Boolean);
+      if (cols.length >= 2) break;
+      paraLines.push(next);
+      j++;
+    }
+    blocks.push({ type: 'paragraph', content: paraLines.join(' ') });
+    i = j;
+  }
+  return blocks;
+}
+
+const sectionRegexInner = /^\d+\.\s+.{1,80}$/;
+
+function renderBlock(b) {
+  switch (b.type) {
+    case 'subheading': return `<h4>${escapeHtml(b.content)}</h4>`;
+    case 'paragraph': return `<p>${inlineFormat(b.content)}</p>`;
+    case 'code': return `<pre><code>${escapeHtml(b.content)}</code></pre>`;
+    case 'endpoint': {
+      const cls = 'method-' + b.method.toLowerCase();
+      return `<div class="endpoint"><span class="method ${cls}">${b.method}</span>${escapeHtml(b.path)}</div>`;
+    }
+    case 'alert': return `<div class="alert alert-${b.kind}">${inlineFormat(b.content)}</div>`;
+    case 'list': {
+      const items = b.items.map(i => `<li>${inlineFormat(i)}</li>`).join('');
+      return `<ul class="bullet">${items}</ul>`;
+    }
+    case 'table': {
+      const [head, ...body] = b.rows;
+      const ths = head.map(c => `<th>${inlineFormat(c)}</th>`).join('');
+      const trs = body.map(r => `<tr>${r.map(c => `<td>${inlineFormat(c)}</td>`).join('')}</tr>`).join('');
+      return `<table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+    }
+  }
+  return '';
+}
+
+function buildHtml(title, sections) {
+  const realSections = sections.filter(s => s.title);
+  const navItems = realSections.map(s => `<li><a href="#sec-${slugify(s.title)}">${escapeHtml(s.title)}</a></li>`).join('');
+  const secsHtml = sections.map(s => {
+    const blocks = s.blocks.map(renderBlock).join('\n');
+    if (!s.title) return blocks ? `<section>${blocks}</section>` : '';
+    return `<section id="sec-${slugify(s.title)}"><h2>${s.num ? s.num + '. ' : ''}${escapeHtml(s.title)}</h2>${blocks}</section>`;
+  }).join('\n');
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escapeHtml(title)}</title>
+<style>${CSS}</style>
+</head>
+<body>
+<header><h1>${escapeHtml(title)}</h1></header>
+${realSections.length > 1 ? `<nav><ul>${navItems}</ul></nav>` : ''}
+<div class="container">
+${secsHtml}
+</div>
+<footer>Documento gerado pelo Conversor de Documentação</footer>
+</body>
+</html>`;
+}
+
+function convert() {
+  const text = document.getElementById('input').value;
+  const title = document.getElementById('docTitle').value || 'Documentação';
+  const sections = parse(text);
+  const html = buildHtml(title, sections);
+  const iframe = document.getElementById('preview');
+  iframe.srcdoc = html;
+  window._generatedHtml = html;
+}
+
+function download() {
+  if (!window._generatedHtml) convert();
+  const blob = new Blob([window._generatedHtml], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (document.getElementById('docTitle').value || 'documento') + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function loadExample() {
+  document.getElementById('input').value = `1. Visão Geral
+Esta API permite o cadastro de usuários no sistema. O consumo segue duas etapas: obter token e consumir endpoint.
+
+2. Ambientes
+Ambiente	URL Base
+DEV	https://api-dev.exemplo.com.br
+HML	https://api-hml.exemplo.com.br
+PROD	https://api.exemplo.com.br
+
+3. Cadastrar Usuário
+Endpoint: POST /v1/cadastro
+Descrição: Cria um novo usuário no sistema.
+
+Headers obrigatórios
+Authorization: Bearer {token}
+Content-Type: application/json
+
+Body
+{
+    "cpf": "12345678901",
+    "nome": "Fulano da Silva",
+    "email": "fulano@email.com"
+}
+
+Regras de validação
+Campo	Obrigatório	Regra
+cpf	Sim	Somente números
+nome	Não	Max 255 caracteres
+email	Não	Formato válido
+
+💡 Dica: Por padrão o token expira em 1 hora, renove antes de expirar.
+
+⚠️ Alerta: Não envie CPF com pontuação, apenas números.
+
+❌ Erro 400: Dados inválidos retorna mensagem de erro detalhada.
+
+Mais informações em https://docs.exemplo.com.br/api`;
+  document.getElementById('docTitle').value = 'Documentação API Exemplo';
+  convert();
+}
+
+document.getElementById('input').addEventListener('input', () => {
+  clearTimeout(window._debounce);
+  window._debounce = setTimeout(convert, 400);
+});
+
+loadExample();
+</script>
+
+</body>
+</html>
